@@ -1,6 +1,20 @@
+# ---------- BUILD STAGE ----------
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY ExpenseTracker.csproj ./
+RUN dotnet restore
+
+COPY . .
+RUN dotnet publish -c Release -o /app/publish
+
+# ---------- RUNTIME STAGE ----------
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY . .
+
+COPY --from=build /app/publish .
+
 ENV ASPNETCORE_URLS=http://0.0.0.0:10000
 EXPOSE 10000
-CMD ["dotnet", "ExpenseTracker.dll"]
+
+ENTRYPOINT ["dotnet", "ExpenseTracker.dll"]
