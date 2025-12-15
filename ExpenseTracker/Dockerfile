@@ -2,11 +2,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY ExpenseTracker.csproj ./
-RUN dotnet restore
+# Copy the project file from the correct subfolder
+COPY ExpenseTracker/ExpenseTracker.csproj ./ExpenseTracker/
+RUN dotnet restore ExpenseTracker/ExpenseTracker.csproj
 
+# Copy everything else
 COPY . .
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish ExpenseTracker/ExpenseTracker.csproj -c Release -o /app/publish
 
 # ---------- RUNTIME STAGE ----------
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
