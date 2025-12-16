@@ -26,20 +26,29 @@ namespace ExpenseTracker.Controllers
         public async Task<IActionResult> Register(RegisterDto dto)
         {
             var user = await _authService.Register(dto.Name, dto.Email, dto.Password);
-            if(user==null) return BadRequest("Email already exists");
+            if (user == null) return BadRequest("Email already exists");
 
-            return Ok(new { message = "User registered successfully"});
+            return Ok(new { message = "User registered successfully" });
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             var user = await _authService.Login(dto.Email, dto.Password);
-            if(user==null)
-            return Unauthorized("Invalid credentials");
+            if (user == null)
+                return Unauthorized("Invalid credentials");
 
             var token = GenerateToken(user);
-            return Ok(new {token});
+            return Ok(new
+            {
+                token,
+                user = new
+                {
+                    id = user.Id,
+                    name = user.Username,
+                    email = user.Email
+                }
+            });
         }
 
         private string GenerateToken(User user)
@@ -50,7 +59,8 @@ namespace ExpenseTracker.Controllers
             var claims = new[]
             {
                 new Claim("userId", user.Id.ToString()),
-                new Claim("email", user.Email)
+                new Claim("email", user.Email),
+                new Claim("name", user.Username)
             };
 
             var token = new JwtSecurityToken(
